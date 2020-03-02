@@ -4,8 +4,15 @@
 # Javier Rodríguez Rodríguez - @doblerodriguez
 
 from numpy.random import shuffle
+import pandas as pd
 
-def Greedy_COPKM(X, R, k, mu):
+iris_data = pd.read_csv("Práctica 1/Instancias y Tablas PAR 2019-20/iris_set.dat", header=None)
+iris_const_10 = pd.read_csv() #Fichero
+iris_const_20 = pd.read_csv() #FIchero
+
+
+def greedy_copkm(X, R, k, mu):
     RSI = shuffle()
+
 
 
