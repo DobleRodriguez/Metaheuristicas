@@ -110,34 +110,120 @@ def weak_const_kmeans(set_name="iris", ncluster=3, const_percent=10, seed=1):
         # determinas el mínimo entre las distancias de cada uno de esos clústeres al dato
         # y actualizas toda la información (vector solución e infeasibility)
 
+        # Quiero es: contar la cantidad de ocurrencias de cada elemento y sumársela a su índice/los otros
+
+
         assigned_data = np.flatnonzero(solution) # a)
 
-        test1 = np.array([0,4,13])
+        test1 = np.arange(14)
+        #test1 = np.array([0,1,4,13])
         #print(test1)
         #print(const[0,test1])
 
+        sol = np.array([1,1,0,0,0,0,0,0,0,0,0,0,0,1])
+
         # Alexa play El Futuro Funciona by La Vida Bohème
         test2 = np.take(test1, np.flatnonzero(const[0,test1] == 1))
-        print(test2)
+        #print(test2)
+        #print(test2)
+        test3 = np.take(sol, test2)
+        #print(test3)
+        #print(test3)
+
+        # Te amo NumPy dame un np.hijo
+        test4 = np.bincount(test3, minlength=3)
+        #print(test4)
+        
+        test5 = np.zeros(3, int)
+        test5 += test4
+        print(test5)
+
+        test6 = np.flatnonzero(test5 == np.amin(test5))
+        print(test6)
+
+        #print(centroids)
+        #print(np.asarray([0,1]))
+        print(centroids[test6,:])
+
+        print(data[0])
+        print(data[0] - centroids[test6,:])
+        test7 = np.linalg.norm(data[0] - centroids[test6,:], axis=1)
+        print("Distancias dato/centroides válidos")
+        print(test7)
+
+        test8 = np.argmin(test7)
+        print(test8)
+
+        test9 = np.zeros(10, int)
+        print(test9)
+        test9[0] = test6[test9]
+        print(test9)
+
+        # MOSCA: cluster0, válido? ¿Cuándo y dónde uso flatnonzero?
+
+
+        #data_cluster_distance = np.linalg.norm(data[0] - clusters[test6])
+        #print(data_cluster_distance)        
+
+        #test4 = np.zeros(5, int)
+        #np.where(test4)
+        #test4[test3] += 1
+        #test4 = np.where(test4 == test3, test4, test4+1)
+        #print(test4)
+        #print(test4[test3])
+        #print(test3)
+
+
         ml_conflicting_data = np.take(assigned_data, np.flatnonzero(const[i, assigned_data] == 1))
+        cl_conflicting_data = np.take(assigned_data, np.flatnonzero(const[i, assigned_data] == -1))
+
+        ml_cluster_data = np.take(solution, ml_conflicting_data)
+        cl_cluster_data = np.take(solution, cl_conflicting_data)
         #ml_conflicting_data = assigned_data[np.flatnonzero(const[assigned_data] == 1)]
 
         # Aquí ni siquiera tengo que comprobar nada, solo sumo +1 a todas las posiciones que no sean esas
         # Igual con CL, pero sumo +1 a las posiciones que coincidan. 
 
 
+        # Qué coño tienes, Javier. Tanto peo pa'no terminar
+        # test2 da los índices de los datos con cluster asignado que tienen restricciones con el dato i
+        # test3 da los índices de los clústeres a los que dichos datos pertenecen
+        # Para cada elemento de test3, sumo 1 al RESTO de elementos en infes_increase 
+        # INDIZO CON test3
+        # Eso me sirve para las CL. Sumo uno a esos valores. Para las ML necesito sumar todos los otros
+        # valores
+
+        # Ahora tengo el vector de infeasibilites, donde en cada posición está el incremento asociado
+        # al cluster de dicho índice
 
 
+        # LA IDEA
+        # Un np.where donde la condición sea que el índice coincida con elemento del array
+        # la acción sea +1 y el default sea igual
+        # EL problema es establecer la condición
 
 
+        # Ahora necesito calcular distancias del dato a cada uno de esos centroides
 
+        infes_increase = np.zeros(ncluster, int)
+        infes_increase += np.bincount(cl_cluster_data, minlength=ncluster)
 
+        ml_count_const = np.arange(ncluster)
+        np.delete(ml_count_const, ml_cluster_data)
+
+        infes_increase += np.bincount(ml_count_const, minlength=ncluster)
+
+        considered_clusters = np.flatnonzero(infes_increase == np.amin(infes_increase))
+
+       # np.linalg.norm(data[i] - clusters[considered_clusters])
+
+        #min_const_clusters = np.flatnonzero(np.amin(infes_increase))
 
 
 
 
         # No sirve, los índices cambian cuando hago el take, pierdo correlación.
-        ml_indices = np.flatnonzero(np.take(const[i], assigned_data)) 
+        #ml_indices = np.flatnonzero(np.take(const[i], assigned_data)) 
 
 
 
