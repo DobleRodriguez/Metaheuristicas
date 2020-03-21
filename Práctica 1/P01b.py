@@ -5,7 +5,6 @@
 # Javier Rodríguez Rodríguez - @doblerodriguez
 
 import numpy as np
-import scipy as sp
 import pathlib as pl
 
 def read_data(set_name, const_percent):
@@ -15,132 +14,120 @@ def read_data(set_name, const_percent):
     f"Instancias y Tablas PAR 2019-20/{set_name}_set_const_{const_percent}.const", delimiter=',')
     return data, const
 
-"""
-def local_search(data, const, k, max_eval=100000):
-    n = len(data)
-    #cluster_assignment = np.random.Generator.shuffle(np.concatenate(np.arange(1,k+1), np.random.Generator.random()))
-
-    pass
-"""
-
-# K-medias Restringido Débil 
-# Calcular el incremento de infeasibility para cada dato en cada cluster
-# De entre los que tengan menor incremento de infeasibility, tomar el centroide más cercano
-# Actualizar centroides
 
 
-########### Ideas
-# Barajar en cada iteración
-# Centroides iniciales entre el rango min-max de cada dimensión
-
-
-# Creación clusteres iniciales
-# Centroides tomando datos aleatorios entre valores mínimo y máximo de cada dimensión
-"""def init_data(set_name="iris", ncluster=5, const_percent=10):
+def local_search(set_name="iris", ncluster=3, const_percent=10, seed=1123):
+    randgen = np.random.default_rng(seed)
+    # data, const = matriz de datos y restricciones, respectivamente (leídas según
+    # nombre y número dado)
     data, const = read_data(set_name, const_percent)
-    mins = np.amin(data, axis=0)
-    maxs = np.amax(data, axis=0)
-    centroids = np.random.default_rng().uniform(mins, maxs, (ncluster, len(mins)))
-    print(centroids)
-    return data, const
-"""
+    # Aseguramos que al menos cada cluster tiene asignado una instancia 
+    solution = np.append(np.arange(ncluster), randgen.integers(ncluster, size=len(data)-ncluster))
+    randgen.shuffle(solution)
 
-def const_check(const, clust_assign, i, j):
-    return ((const[i,j] == 1 and clust_assign[i] != clust_assign[j]) or 
-        (const[i,j] == -1 and clust_assign[i] == clust_assign[j]))
+    data_distances = np.empty(0)
+    for i in np.nditer(np.arange(len(data))):
+        data_distances = np.append(data_distances, np.linalg.norm(data[i] - data[i:], axis=1))
+    # Techo de la distancia máxima (lambda)
+    scale_factor = np.ceil(np.amax(data_distances))
+
+    # Centroides (calculados según los datos de cada clúster)
+    centroids = np.empty([ncluster, len(data[0])])
+    for i in np.nditer(np.arange(ncluster)):
+        centroids[i] = np.mean(data[np.flatnonzero(solution == i)], axis=0)
+
+
+    # Distancias intraclusteres
+    intra_cluster_distances = np.empty(ncluster)
+    for i in np.nditer(np.arange(ncluster)):
+        intra_cluster_distances[i] = np.mean(np.linalg.norm(centroids[i] - data[np.flatnonzero(solution == i)], axis=1))
+
+    # Infeasibility generada por cada elemento de la solución, y su suma
+    infeasibility = 0
+    for i in np.nditer(np.arange(len(solution))):
+        ml_conflicting_data = np.flatnonzero(const[i, :i] == 1)
+        #print(ml_conflicting_data)
+        cl_conflicting_data = np.flatnonzero(const[i, :i] == -1)
+        #input(print(cl_conflicting_data))
+        infeasibility += np.count_nonzero(solution[i] != solution[ml_conflicting_data]) \
+            + np.count_nonzero((solution[i] == solution[cl_conflicting_data]))
     
+    # Desviación general de la solución
+    general_desviation = np.mean(intra_cluster_distances)
 
-def weak_const_kmeans(set_name="iris", ncluster=3, const_percent=10, seed=1):
-#################################################################################################
-    """
-    # Trozo test: no le importa nada de los datos reales, no cree en Dios
-    # y odia a la policía
-    # 14 datos
-    # sol = Asignación dato/cluster (índice/valor)
-    sol = np.array([1,1,-1,-1,0,-1,-1,-1,-1,-1,-1,-1,-1,1])
-    const = np.array([1,1,0,0,0,0,0,0,0,0,0,0,0,1])
-    # test1 = elementos YA en cluster (aplicando nonzero a sol)
-    test1 = np.array([0,1,4,13])
-    print(f"{test1} Test1")
-    # test2 = índice de los elementos que tienen restricciones ML con el dato i
-    test2 = np.take(test1, np.flatnonzero(const[test1] == 1))
-    print(f"{test2} Test2")
-    # test3 = número de cluster al que pertenecen los datos con restricción ML y cluster
-    test3 = np.take(sol, test2)
-    print(f"{test3} Test3")
-    # test4 = Cantidad de elementos con restricciones ML respecto a i en cada cluster 
-    test4 = np.bincount(test3, minlength=3)
-    print(f"{test4} Test4")
-    # test5 = Sumar dichos aumentos a la infeasibility actual (necesario? probs para combinar ML y CL)
-    test5 = np.zeros(3, int)
-    test5 += test4
-    print(f"{test5} Test5")
-    # test6 = Determinar el vector de mínimos entre estos (clusteres con mínima infeasibility)
-    test6 = np.flatnonzero(test5 == np.amin(test5))
-    print(f"{test6} Test6")
-    #test7 = Valor de distancias entre el dato y los centroides de cada uno de los clústeres válidos
-    test7 = np.linalg.norm(data[0] - centroids[test6,:], axis=1)
-    print(f"{test7} Test7")
-    # test8 = Número de cluster con mínima distancia respecto al dato (de entre mínima infeasibility)
-    test8 = np.argmin(test7)
-    print(f"{test8} Test8")
-    # test9 = actualización del vector solución asignando cluster al dato i
-    test9 = sol
-    test9[0] = test6[test8] 
-    print(f"{test9} Test9")
-    """
-########################################################################################################
+    # Valor de la función objetivo
+    objective = general_desviation + infeasibility * scale_factor
+    best_solution = False
+    while(not best_solution):
+        best_solution = True
+        # Todo el proceso de construcción de vecindario
 
-        # Hablemos. Qué coño de la madre quieres hacer, Javier. 
-        # Quiero terminar con un vector, de tamaño ncluster, tal que en cada posición
-        # tenga el incremento de infeasibility causado por poner el dato en el cluster
-        # con ese índice. Es decir, infes_increase[ncluster] donde cada dato está en [0, inf)
+        # Generación del vecindario virtual
+        # Que no dejen un cluster vacío
+        cluster_size = np.bincount(solution)
+        single_elem_clusters = np.flatnonzero(cluster_size == 1)
+        possible_elements = np.flatnonzero(~np.in1d(solution, single_elem_clusters)) 
 
-        # Para eso, necesito comprobar la información relativa a las restricciones del valor i
-        # contra los elementos YA PERTENECIENTES a un cluster.
-        # Si no perteneces a un cluster, te jodes y esperas tu turno.
+        # Y que excluyan la solución (haya un cambio)
+        neighbors = np.empty([0,2], int)
+        for i in np.nditer(np.arange(ncluster)):
+            in_cluster = np.flatnonzero(solution[possible_elements] != i)
+            neighbors = np.append(neighbors, np.stack(np.meshgrid(in_cluster, i), -1).reshape(-1, 2), axis=0)
 
-        # Para eso, necesito:
-        # a) Saber qué elementos ya están en un cluster
-        # b) Saber qué restricciones involucran esos datos
-        # c) Determinar en cuánto aumenta la infeasibility en cada asignación a cluster, con esto en mente
+        randgen.shuffle(neighbors)
 
-        # Cómo hago cada una de estas cosas. 
-        # Coño mi bro excelente pregunta, a ver
-        # a) es fácil. np.nonzero(solution)
-        # b) Se me ocurre un select, capaz 2 (si descubro como particionar cada condición en un array cada una)
-        # c) Verga. Tengo que cruzar ambos datos, y no estoy seguro de cómo. 
+        counter = 0
+        #print(len(neighbors))
+        for change in neighbors:
+            #print(counter)
+            counter += 1
+            # change[0] = neighbor index
+            # change[1] = neighbor cluster
 
-        # Una vez tienes ese vector es relativamente sencillo. Sacas el índice de los valores mínimos y después
-        # determinas el mínimo entre las distancias de cada uno de esos clústeres al dato
-        # y actualizas toda la información (vector solución e infeasibility)
+            new_possibility = np.copy(solution)
+            new_possibility[change[0]] = change[1]
 
-        # Quiero es: contar la cantidad de ocurrencias de cada elemento y sumársela a su índice/los otros
+            new_centroids = np.copy(centroids)
+            new_intra_cluster = np.copy(intra_cluster_distances)
 
-            #ml_conflicting_data = assigned_data[np.flatnonzero(const[assigned_data] == 1)]
+            ml_conflicting_data = np.flatnonzero(const[change[0]] == 1)
+            cl_conflicting_data = np.flatnonzero(const[change[0]] == -1)
 
-            # Aquí ni siquiera tengo que comprobar nada, solo sumo +1 a todas las posiciones que no sean esas
-            # Igual con CL, pero sumo +1 a las posiciones que coincidan. 
+            original_infeas = np.count_nonzero(solution[change[0]] != solution[ml_conflicting_data]) \
+            + np.count_nonzero((solution[change[0]] == solution[cl_conflicting_data]))
 
+            infeas_change = np.count_nonzero(change[1] != new_possibility[ml_conflicting_data]) \
+            + np.count_nonzero((change[1] == new_possibility[cl_conflicting_data]))
 
-            # Qué coño tienes, Javier. Tanto peo pa'no terminar
-            # test2 da los índices de los datos con cluster asignado que tienen restricciones con el dato i
-            # test3 da los índices de los clústeres a los que dichos datos pertenecen
-            # Para cada elemento de test3, sumo 1 al RESTO de elementos en infes_increase 
-            # INDIZO CON test3
-            # Eso me sirve para las CL. Sumo uno a esos valores. Para las ML necesito sumar todos los otros
-            # valores
+            new_infeas = infeasibility - original_infeas + infeas_change
 
-            # Ahora tengo el vector de infeasibilites, donde en cada posición está el incremento asociado
-            # al cluster de dicho índice
+            changed_clusters = np.array([change[1], solution[change[0]]])
+            for i in np.nditer(changed_clusters):
+                new_centroids[i] = np.mean(data[np.flatnonzero(new_possibility == i)], axis=0)
+                new_intra_cluster[i] = np.mean(np.linalg.norm(new_centroids[i] - data[np.flatnonzero(new_possibility == i)], axis=1))
+            
+            new_desviation = np.mean(new_intra_cluster)
+
+            new_objective = new_desviation + new_infeas * scale_factor
+            if (new_objective < objective):
+                #input(print(f"iteración del for #{counter} de {len(neighbors)}"))
+                solution = new_possibility
+                centroids = new_centroids
+                intra_cluster_distances = new_intra_cluster
+                infeasibility = new_infeas
+                general_desviation = new_desviation
+                objective = new_objective
+                best_solution = False
+                break 
+    print(solution)
+    print(general_desviation)
+    print(infeasibility)
+    print(objective)
 
 
-            # LA IDEA
-            # Un np.where donde la condición sea que el índice coincida con elemento del array
-            # la acción sea +1 y el default sea igual
-            # EL problema es establecer la condición
 
 
+def weak_const_kmeans(set_name="iris", ncluster=3, const_percent=10, seed=1123):
     # randgen = Generador de números aleatorios según la semilla
     randgen = np.random.default_rng(seed)
     # data, const = matriz de datos y restricciones, respectivamente (leídas según
@@ -154,62 +141,75 @@ def weak_const_kmeans(set_name="iris", ncluster=3, const_percent=10, seed=1):
     centroids = randgen.uniform(mins, maxs, (ncluster, len(mins)))    
     # RSI = orden de lectura de los datos, aleatorio
     RSI = np.arange(len(data))
-    randgen.shuffle(RSI)
     # solution = vector solución, inicializado a -1, para representar que no pertenecen a ningún cluster
-    solution = np.full(len(data), -1, int)
     # sol_update = booleano para representar si el vector solución cambia
-    sol_update = True
+    cluster_update = True
     # n_iters = contador de iteraciones
     n_iters = 0
+    old_centroids = np.empty(ncluster)
     # Ciclo principal: mientras haya algún tipo de actualización
-    while(sol_update):
+    randgen.shuffle(RSI)
+    while(cluster_update):
+        solution = np.full(len(data), -1, int)
         n_iters += 1
-        sol_update = False
+        cluster_update = False
         # Valor de infeasibility total
         infeasibility = 0
         # Ciclo secundario: para cada dato (barajado)
         for i in np.nditer(RSI):
             # assigned_data = datos que estén contenidos en algún cluster
             assigned_data = np.flatnonzero(solution != -1)
-            print(f"{assigned_data} : assigned_data")
             # ml(cl)_conflicting_data = índices de datos con restricciones ML(CL) respecto a i
             ml_conflicting_data = np.take(assigned_data, np.flatnonzero(const[i, assigned_data] == 1))
             cl_conflicting_data = np.take(assigned_data, np.flatnonzero(const[i, assigned_data] == -1))
             # ml(cl)_cluster_data = cluster al que pertenecen los datos en ml(cl)_conflicting_data
             ml_cluster_data = np.take(solution, ml_conflicting_data)
-            cl_cluster_data = np.take(solution, cl_conflicting_data)
+            cl_cluster_data = np.take(solution, cl_conflicting_data)            
             # infeas_increase = vector de incremento de infeasibility asociado a cada cluster 
-            # (inicialmente 0)
-            infeas_increase = np.zeros(ncluster, int)
-            # Para las restricciones cl, sumamos +1 en infeasibility a los clusteres donde el dato
-            # restringido pertenezca (pues de estar i ahí, compartirían cluster y violaría el CL)
+            ml_cluster_data = np.bincount(ml_cluster_data, minlength=ncluster)
+            infeas_increase = np.full(ncluster, np.sum(ml_cluster_data))
+            infeas_increase -= ml_cluster_data
             infeas_increase += np.bincount(cl_cluster_data, minlength=ncluster)
-            # ml_count_const = vector "contrario" a ml_cluster_data, con el índice de todos los clústeres
-            # que NO contengan un elemento con restricción ML respecto a i (aquellos en ml_cluster_data)
-            ml_count_const = np.arange(ncluster)
-            np.delete(ml_count_const, ml_cluster_data)
-            # Para las restricciones ml, sumamos +1 en infeasibility a los clusteres donde el dato 
-            # restringido NO pertenezca (pues de estar i ahí, no compartirían cluster y violaría el ML)
-            infeas_increase += np.bincount(ml_count_const, minlength=ncluster)
             # min_infeas_increase = incremento mínimo de infeasibility
             min_infeas = np.amin(infeas_increase)
-            # considered_clusters = clusteres que incrementen al mínimo la infeasibility
-            considered_clusters = np.flatnonzero(infeas_increase == min_infeas)
             # actualizamos la infeasibility total
             infeasibility += min_infeas
-            # data_cluster_distances = distancia (euclidiana) entre el dato i y los clústeres considerados
-            # calculada con la norma l2
-            data_cluster_distances = np.linalg.norm(i - centroids[considered_clusters,:], axis=1)
-            # selected_cluster = cluster con mínima distancia al dato (de entre los considerados)
-            # en caso de empate, selecciona el primero en orden de lectura
-            selected_cluster = np.argmin(data_cluster_distances)
+            # considered_clusters = clusteres que incrementen al mínimo la infeasibility
+            considered_clusters = np.flatnonzero(infeas_increase == min_infeas)
+            if (len(considered_clusters) > 1):
+                # data_cluster_distances = distancia (euclidiana) entre el dato i y los clústeres considerados
+                # calculada con la norma l2
+                data_cluster_distances = np.linalg.norm(data[i] - centroids[considered_clusters,:], axis=1)
+                #print(f"{data_cluster_distances} dcd")
+                # selected_cluster = cluster con mínima distancia al dato (de entre los considerados)
+                # en caso de empate, selecciona el primero en orden de lectura
+                selected_cluster = considered_clusters[np.argmin(data_cluster_distances)]
+            else:
+                selected_cluster = considered_clusters[0]
             # Actualización del dato
-            if (solution[i] != selected_cluster):
-                sol_update = True
-                solution[i] = selected_cluster
+            solution[i] = selected_cluster
+        # Actualización de clusteres
+        # Puede optimizarse?
+        for i in np.nditer(np.arange(ncluster)):
+            #print(data[np.flatnonzero(solution==i)])
+            #print(np.mean(data[np.flatnonzero(solution == i)],axis=0))
+            
+            centroids[i] = np.mean(data[np.flatnonzero(solution == i)], axis=0)
 
-            input("Iteración del for")
-        print(f"{solution} Solución en iteración {n_iters} con infeasibility {infeasibility}")
+        if (not np.array_equal(old_centroids, centroids)):
+            cluster_update = True
+            old_centroids = np.copy(centroids)
+        
+        inter_cluster_distances = np.empty(ncluster)
+        for i in np.nditer(np.arange(ncluster)):
+            inter_cluster_distances[i] = np.mean(np.linalg.norm(centroids[i] - data[np.flatnonzero(solution == i)], axis=1))
+        general_desviation = np.mean(inter_cluster_distances)
+        #input(print(f"{solution} solution \n {np.bincount(solution)} bincount \n {centroids} centroids \n \
+#{general_desviation} general desviation \n {infeasibility} infeasibility"))
+    print(f"{solution} solution \n {np.bincount(solution)} bincount \n {centroids} centroids \n \
+{general_desviation} general desviation \n {infeasibility} infeasibility")
+
 # Iris
 #print(len(data[0]))
-weak_const_kmeans()
+#weak_const_kmeans(set_name="ecoli" ,const_percent=20, ncluster=8)
+local_search(set_name="ecoli" ,const_percent=20, ncluster=8)
