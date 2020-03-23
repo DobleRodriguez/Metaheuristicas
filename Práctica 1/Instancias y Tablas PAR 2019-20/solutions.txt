@@ -1,0 +1,205 @@
+Algoritmo Búsqueda Local para iris con 10% de restricciones, semilla 1123 y 3 clústeres
+Desviación general: 0.669304949371126
+Restricciones incumplidas: 0
+Función Objetivo: 0.669304949371126
+Tiempo de ejecución:  0.2885s
+Algoritmo Greedy k-medias para iris con 10% de restricciones, semilla 1123 y 3 clústeres
+Desviación general: 0.6643740267814713
+Restricciones incumplidas: 9
+Función Objetivo: 0.6643740267814713
+Tiempo de ejecución:  0.0310s
+Algoritmo Búsqueda Local para iris con 10% de restricciones, semilla 9145 y 3 clústeres
+Desviación general: 0.6693049493711261
+Restricciones incumplidas: 0
+Función Objetivo: 0.6693049493711261
+Tiempo de ejecución:  0.2974s
+Algoritmo Greedy k-medias para iris con 10% de restricciones, semilla 9145 y 3 clústeres
+Desviación general: 0.6664272520626827
+Restricciones incumplidas: 35
+Función Objetivo: 0.6664272520626827
+Tiempo de ejecución:  0.0331s
+Algoritmo Búsqueda Local para iris con 10% de restricciones, semilla 420 y 3 clústeres
+Desviación general: 0.6693049493711261
+Restricciones incumplidas: 0
+Función Objetivo: 0.6693049493711261
+Tiempo de ejecución:  0.3399s
+Algoritmo Greedy k-medias para iris con 10% de restricciones, semilla 420 y 3 clústeres
+Desviación general: 0.6825322355041815
+Restricciones incumplidas: 38
+Función Objetivo: 0.6825322355041815
+Tiempo de ejecución:  0.0234s
+Algoritmo Búsqueda Local para iris con 10% de restricciones, semilla 174 y 3 clústeres
+Desviación general: 0.669304949371126
+Restricciones incumplidas: 0
+Función Objetivo: 0.669304949371126
+Tiempo de ejecución:  0.3475s
+Algoritmo Greedy k-medias para iris con 10% de restricciones, semilla 174 y 3 clústeres
+Desviación general: 0.669304949371126
+Restricciones incumplidas: 0
+Función Objetivo: 0.669304949371126
+Tiempo de ejecución:  0.0228s
+Algoritmo Búsqueda Local para iris con 10% de restricciones, semilla 745 y 3 clústeres
+Desviación general: 0.669304949371126
+Restricciones incumplidas: 0
+Función Objetivo: 0.669304949371126
+Tiempo de ejecución:  0.2980s
+Algoritmo Greedy k-medias para iris con 10% de restricciones, semilla 745 y 3 clústeres
+Desviación general: 0.6734523557307562
+Restricciones incumplidas: 28
+Función Objetivo: 0.6734523557307562
+Tiempo de ejecución:  0.0322s
+Algoritmo Búsqueda Local para iris con 20% de restricciones, semilla 1123 y 3 clústeres
+Desviación general: 0.669304949371126
+Restricciones incumplidas: 0
+Función Objetivo: 0.669304949371126
+Tiempo de ejecución:  0.3273s
+Algoritmo Greedy k-medias para iris con 20% de restricciones, semilla 1123 y 3 clústeres
+Desviación general: 0.669304949371126
+Restricciones incumplidas: 0
+Función Objetivo: 0.669304949371126
+Tiempo de ejecución:  0.0317s
+Algoritmo Búsqueda Local para iris con 20% de restricciones, semilla 9145 y 3 clústeres
+Desviación general: 0.6693049493711261
+Restricciones incumplidas: 0
+Función Objetivo: 0.6693049493711261
+Tiempo de ejecución:  0.3281s
+Algoritmo Greedy k-medias para iris con 20% de restricciones, semilla 9145 y 3 clústeres
+Desviación general: 0.669304949371126
+Restricciones incumplidas: 0
+Función Objetivo: 0.669304949371126
+Tiempo de ejecución:  0.0271s
+Algoritmo Búsqueda Local para iris con 20% de restricciones, semilla 420 y 3 clústeres
+Desviación general: 0.669304949371126
+Restricciones incumplidas: 0
+Función Objetivo: 0.669304949371126
+Tiempo de ejecución:  0.3624s
+Algoritmo Greedy k-medias para iris con 20% de restricciones, semilla 420 y 3 clústeres
+Desviación general: 0.6682349440225895
+Restricciones incumplidas: 18
+Función Objetivo: 0.6682349440225895
+Tiempo de ejecución:  0.0282s
+Algoritmo Búsqueda Local para iris con 20% de restricciones, semilla 174 y 3 clústeres
+Desviación general: 0.6693049493711261
+Restricciones incumplidas: 0
+Función Objetivo: 0.6693049493711261
+Tiempo de ejecución:  0.4079s
+Algoritmo Greedy k-medias para iris con 20% de restricciones, semilla 174 y 3 clústeres
+Desviación general: 0.6693049493711261
+Restricciones incumplidas: 0
+Función Objetivo: 0.6693049493711261
+Tiempo de ejecución:  0.0248s
+Algoritmo Búsqueda Local para iris con 20% de restricciones, semilla 745 y 3 clústeres
+Desviación general: 0.669304949371126
+Restricciones incumplidas: 0
+Función Objetivo: 0.669304949371126
+Tiempo de ejecución:  0.3172s
+Algoritmo Greedy k-medias para iris con 20% de restricciones, semilla 745 y 3 clústeres
+Desviación general: 0.6679235755122304
+Restricciones incumplidas: 42
+Función Objetivo: 0.6679235755122304
+Tiempo de ejecución:  0.0305s
+Algoritmo Búsqueda Local para rand con 10% de restricciones, semilla 1123 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.3706s
+Algoritmo Greedy k-medias para rand con 10% de restricciones, semilla 1123 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.0286s
+Algoritmo Búsqueda Local para rand con 10% de restricciones, semilla 9145 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.3821s
+Algoritmo Greedy k-medias para rand con 10% de restricciones, semilla 9145 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.0371s
+Algoritmo Búsqueda Local para rand con 10% de restricciones, semilla 420 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.3499s
+Algoritmo Greedy k-medias para rand con 10% de restricciones, semilla 420 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.0229s
+Algoritmo Búsqueda Local para rand con 10% de restricciones, semilla 174 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.4812s
+Algoritmo Greedy k-medias para rand con 10% de restricciones, semilla 174 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.0265s
+Algoritmo Búsqueda Local para rand con 10% de restricciones, semilla 745 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.3109s
+Algoritmo Greedy k-medias para rand con 10% de restricciones, semilla 745 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.0197s
+Algoritmo Búsqueda Local para rand con 20% de restricciones, semilla 1123 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.3633s
+Algoritmo Greedy k-medias para rand con 20% de restricciones, semilla 1123 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.0226s
+Algoritmo Búsqueda Local para rand con 20% de restricciones, semilla 9145 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.2668s
+Algoritmo Greedy k-medias para rand con 20% de restricciones, semilla 9145 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.0228s
+Algoritmo Búsqueda Local para rand con 20% de restricciones, semilla 420 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.2932s
+Algoritmo Greedy k-medias para rand con 20% de restricciones, semilla 420 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.0165s
+Algoritmo Búsqueda Local para rand con 20% de restricciones, semilla 174 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.3306s
+Algoritmo Greedy k-medias para rand con 20% de restricciones, semilla 174 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.0161s
+Algoritmo Búsqueda Local para rand con 20% de restricciones, semilla 745 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.3029s
+Algoritmo Greedy k-medias para rand con 20% de restricciones, semilla 745 y 3 clústeres
+Desviación general: 0.7573152955040469
+Restricciones incumplidas: 0
+Función Objetivo: 0.7573152955040469
+Tiempo de ejecución:  0.0153s
+Algoritmo Búsqueda Local para ecoli con 10% de restricciones, semilla 1123 y 8 clústeres
+Desviación general: 33.32982480380608
+Restricciones incumplidas: 2
+Función Objetivo: 335.3298248038061
+Tiempo de ejecución:  7.0892s

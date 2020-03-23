@@ -6,21 +6,28 @@
 
 import numpy as np
 import pathlib as pl
+import time
 
-def read_data(set_name, const_percent):
+# Read data y hacer lambda AFUERA
+# Pasar como parámetros
+
+def init_data(set_name, const_percent):
     data = np.loadtxt(pl.Path(__file__).parent /
     f"Instancias y Tablas PAR 2019-20/{set_name}_set.dat", delimiter=',')
     const = np.loadtxt(pl.Path(__file__).parent /
     f"Instancias y Tablas PAR 2019-20/{set_name}_set_const_{const_percent}.const", delimiter=',')
-    return data, const
+    data_distances = np.empty(0)
+    for i in np.nditer(np.arange(len(data))):
+        data_distances = np.append(data_distances, np.linalg.norm(data[i] - data[i+1:], axis=1))
+    # Techo de la distancia máxima (lambda) entre cantidad de restricciones (solo consideramos
+    # la diagonal superior y sin contar la diagonal)
+    scale_factor = np.ceil(np.amax(data_distances)) / np.count_nonzero(np.triu(const, 1))
+
+    return data, const, scale_factor
 
 
 
-def local_search(set_name="iris", ncluster=3, const_percent=10, seed=1123):
-    randgen = np.random.default_rng(seed)
-    # data, const = matriz de datos y restricciones, respectivamente (leídas según
-    # nombre y número dado)
-    data, const = read_data(set_name, const_percent)
+def local_search(data, const, ncluster, scale_factor, randgen):
     # Aseguramos que al menos cada cluster tiene asignado una instancia 
     solution = np.append(np.arange(ncluster), randgen.integers(ncluster, size=len(data)-ncluster))
     randgen.shuffle(solution)
@@ -66,42 +73,40 @@ def local_search(set_name="iris", ncluster=3, const_percent=10, seed=1123):
         # Que no dejen un cluster vacío
         cluster_size = np.bincount(solution)
         single_elem_clusters = np.flatnonzero(cluster_size == 1)
-        possible_elements = np.flatnonzero(~np.in1d(solution, single_elem_clusters)) 
+        possible_elements = np.flatnonzero(~np.isin(solution, single_elem_clusters)) 
+
 
         # Y que excluyan la solución (haya un cambio)
         neighbors = np.empty([0,2], int)
         for i in np.nditer(np.arange(ncluster)):
-            in_cluster = np.flatnonzero(solution[possible_elements] != i)
-            neighbors = np.append(neighbors, np.stack(np.meshgrid(in_cluster, i), -1).reshape(-1, 2), axis=0)
+            change_cluster = possible_elements[np.isin(possible_elements, np.flatnonzero(solution != i))]
+            neighbors = np.append(neighbors, np.stack(np.meshgrid(change_cluster, i), -1).reshape(-1, 2), axis=0)
+
 
         randgen.shuffle(neighbors)
 
         counter = 0
-        #print(len(neighbors))
-        for change in neighbors:
-            #print(counter)
+        for index, cluster in neighbors:
             counter += 1
-            # change[0] = neighbor index
-            # change[1] = neighbor cluster
 
             new_possibility = np.copy(solution)
-            new_possibility[change[0]] = change[1]
+            new_possibility[index] = cluster
 
             new_centroids = np.copy(centroids)
             new_intra_cluster = np.copy(intra_cluster_distances)
 
-            ml_conflicting_data = np.flatnonzero(const[change[0]] == 1)
-            cl_conflicting_data = np.flatnonzero(const[change[0]] == -1)
+            ml_conflicting_data = np.flatnonzero(const[index] == 1)
+            cl_conflicting_data = np.flatnonzero(const[index] == -1)
 
-            original_infeas = np.count_nonzero(solution[change[0]] != solution[ml_conflicting_data]) \
-            + np.count_nonzero((solution[change[0]] == solution[cl_conflicting_data]))
+            original_infeas = np.count_nonzero(solution[index] != solution[ml_conflicting_data]) \
+            + np.count_nonzero((solution[index] == solution[cl_conflicting_data]))
 
-            infeas_change = np.count_nonzero(change[1] != new_possibility[ml_conflicting_data]) \
-            + np.count_nonzero((change[1] == new_possibility[cl_conflicting_data]))
+            infeas_change = np.count_nonzero(cluster != new_possibility[ml_conflicting_data]) \
+            + np.count_nonzero((cluster == new_possibility[cl_conflicting_data]))
 
             new_infeas = infeasibility - original_infeas + infeas_change
 
-            changed_clusters = np.array([change[1], solution[change[0]]])
+            changed_clusters = np.array([cluster, solution[index]])
             for i in np.nditer(changed_clusters):
                 new_centroids[i] = np.mean(data[np.flatnonzero(new_possibility == i)], axis=0)
                 new_intra_cluster[i] = np.mean(np.linalg.norm(new_centroids[i] - data[np.flatnonzero(new_possibility == i)], axis=1))
@@ -110,7 +115,6 @@ def local_search(set_name="iris", ncluster=3, const_percent=10, seed=1123):
 
             new_objective = new_desviation + new_infeas * scale_factor
             if (new_objective < objective):
-                #input(print(f"iteración del for #{counter} de {len(neighbors)}"))
                 solution = new_possibility
                 centroids = new_centroids
                 intra_cluster_distances = new_intra_cluster
@@ -119,20 +123,11 @@ def local_search(set_name="iris", ncluster=3, const_percent=10, seed=1123):
                 objective = new_objective
                 best_solution = False
                 break 
-    print(solution)
-    print(general_desviation)
-    print(infeasibility)
-    print(objective)
+    return general_desviation, infeasibility, objective
 
 
 
-
-def weak_const_kmeans(set_name="iris", ncluster=3, const_percent=10, seed=1123):
-    # randgen = Generador de números aleatorios según la semilla
-    randgen = np.random.default_rng(seed)
-    # data, const = matriz de datos y restricciones, respectivamente (leídas según
-    # nombre y número dado)
-    data, const = read_data(set_name, const_percent)
+def weak_const_kmeans(data, const, ncluster, scale_factor, randgen):
     # mins, maxs = vector con los valores mínimos y máximos de los datos para cada dimensión, respectivamente
     mins = np.amin(data, axis=0)
     maxs = np.amax(data, axis=0)
@@ -204,12 +199,46 @@ def weak_const_kmeans(set_name="iris", ncluster=3, const_percent=10, seed=1123):
         for i in np.nditer(np.arange(ncluster)):
             inter_cluster_distances[i] = np.mean(np.linalg.norm(centroids[i] - data[np.flatnonzero(solution == i)], axis=1))
         general_desviation = np.mean(inter_cluster_distances)
-        #input(print(f"{solution} solution \n {np.bincount(solution)} bincount \n {centroids} centroids \n \
-#{general_desviation} general desviation \n {infeasibility} infeasibility"))
-    print(f"{solution} solution \n {np.bincount(solution)} bincount \n {centroids} centroids \n \
-{general_desviation} general desviation \n {infeasibility} infeasibility")
+        #input(print(f"{solution} solution \n {np.bincount(solution)} bincount \n {centroids} centroids \
+            #\n {general_desviation} general desviation \n {infeasibility} infeasibility"))
+    return general_desviation, infeasibility, general_desviation + infeasibility * scale_factor
 
-# Iris
-#print(len(data[0]))
-#weak_const_kmeans(set_name="ecoli" ,const_percent=20, ncluster=8)
-local_search(set_name="ecoli" ,const_percent=20, ncluster=8)
+
+np.seterr(all='raise')
+sets = np.array(["iris", "rand", "ecoli"])
+nclusters = np.array([3, 3, 8])
+percents = np.array([10, 20])
+seeds = np.array([1123, 9145, 420, 174, 745])
+
+values = np.stack(np.meshgrid(percents, sets, seeds), -1).reshape(-1,3)
+sets, set_repeats = np.unique(values[:,1], return_counts=True)
+
+set_repeats = np.repeat(nclusters, set_repeats)
+values = np.concatenate((values, np.array([set_repeats]).T), axis=-1)
+
+open(pl.Path(__file__).parent / f"Instancias y Tablas PAR 2019-20/solutions.txt", 'w+').close()
+for percent,dataset,seed,ncluster in values:
+    data, const, scale_factor = init_data(dataset, percent)
+    randgen = np.random.default_rng(int(seed))
+    tic_ls = time.perf_counter()
+    general_desviation, infeasibility, objective = local_search(data, const, int(ncluster), int(scale_factor), randgen)
+    toc_ls = time.perf_counter()
+    with open(pl.Path(__file__).parent / f"Instancias y Tablas PAR 2019-20/solutions.txt",'a+') as sol_file:
+        sol_file.write(
+f"""Algoritmo Búsqueda Local para {dataset} con {percent}% de restricciones, semilla {seed} y {ncluster} clústeres
+Desviación general: {general_desviation}
+Restricciones incumplidas: {infeasibility}
+Función Objetivo: {objective}
+Tiempo de ejecución: {toc_ls - tic_ls: 0.4f}s
+""")
+    tic_kmeans = time.perf_counter()
+    general_desviation, infeasibility, objective = weak_const_kmeans(data, const, int(ncluster), int(scale_factor), randgen)
+    toc_kmeans = time.perf_counter()
+    with open(pl.Path(__file__).parent / f"Instancias y Tablas PAR 2019-20/solutions.txt",'a+') as sol_file:
+        sol_file.write(
+f"""Algoritmo Greedy k-medias para {dataset} con {percent}% de restricciones, semilla {seed} y {ncluster} clústeres
+Desviación general: {general_desviation}
+Restricciones incumplidas: {infeasibility}
+Función Objetivo: {objective}
+Tiempo de ejecución: {toc_kmeans - tic_kmeans: 0.4f}s
+""")
