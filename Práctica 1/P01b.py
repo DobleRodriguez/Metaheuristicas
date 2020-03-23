@@ -13,9 +13,9 @@ import time
 
 def init_data(set_name, const_percent):
     data = np.loadtxt(pl.Path(__file__).parent /
-    f"Instancias y Tablas PAR 2019-20/{set_name}_set.dat", delimiter=',')
+    f"Instancias y Tablas PAR 2019-20/new_sets/{set_name}_set.dat", delimiter=',')
     const = np.loadtxt(pl.Path(__file__).parent /
-    f"Instancias y Tablas PAR 2019-20/{set_name}_set_const_{const_percent}.const", delimiter=',')
+    f"Instancias y Tablas PAR 2019-20/new_sets/{set_name}_set_const_{const_percent}.const", delimiter=',')
     data_distances = np.empty(0)
     for i in np.nditer(np.arange(len(data))):
         data_distances = np.append(data_distances, np.linalg.norm(data[i] - data[i+1:], axis=1))
@@ -172,6 +172,7 @@ def weak_const_kmeans(data, const, ncluster, scale_factor, randgen):
             # considered_clusters = clusteres que incrementen al mínimo la infeasibility
             considered_clusters = np.flatnonzero(infeas_increase == min_infeas)
             if (len(considered_clusters) > 1):
+                #print(considered_clusters)
                 # data_cluster_distances = distancia (euclidiana) entre el dato i y los clústeres considerados
                 # calculada con la norma l2
                 data_cluster_distances = np.linalg.norm(data[i] - centroids[considered_clusters,:], axis=1)
@@ -179,6 +180,7 @@ def weak_const_kmeans(data, const, ncluster, scale_factor, randgen):
                 # selected_cluster = cluster con mínima distancia al dato (de entre los considerados)
                 # en caso de empate, selecciona el primero en orden de lectura
                 selected_cluster = considered_clusters[np.argmin(data_cluster_distances)]
+                #print(selected_cluster)
             else:
                 selected_cluster = considered_clusters[0]
             # Actualización del dato
@@ -188,8 +190,10 @@ def weak_const_kmeans(data, const, ncluster, scale_factor, randgen):
         for i in np.nditer(np.arange(ncluster)):
             #print(data[np.flatnonzero(solution==i)])
             #print(np.mean(data[np.flatnonzero(solution == i)],axis=0))
-            
+            #print(f"{data[solution == i].T}")
+            #print(f"Epa {np.sum(data[np.flatnonzero(solution == i)], axis=0)/np.count_nonzero(solution == i)}")
             centroids[i] = np.mean(data[np.flatnonzero(solution == i)], axis=0)
+        #print(centroids)
 
         if (not np.array_equal(old_centroids, centroids)):
             cluster_update = True
@@ -201,6 +205,7 @@ def weak_const_kmeans(data, const, ncluster, scale_factor, randgen):
         general_desviation = np.mean(inter_cluster_distances)
         #input(print(f"{solution} solution \n {np.bincount(solution)} bincount \n {centroids} centroids \
             #\n {general_desviation} general desviation \n {infeasibility} infeasibility"))
+    #print("TErminado")
     return general_desviation, infeasibility, general_desviation + infeasibility * scale_factor
 
 
@@ -208,7 +213,7 @@ np.seterr(all='raise')
 sets = np.array(["iris", "rand", "ecoli"])
 nclusters = np.array([3, 3, 8])
 percents = np.array([10, 20])
-seeds = np.array([1123, 9145, 420, 174, 745])
+seeds = np.array([1, 112, 241, 27, 472])
 
 values = np.stack(np.meshgrid(percents, sets, seeds), -1).reshape(-1,3)
 sets, set_repeats = np.unique(values[:,1], return_counts=True)
@@ -216,29 +221,38 @@ sets, set_repeats = np.unique(values[:,1], return_counts=True)
 set_repeats = np.repeat(nclusters, set_repeats)
 values = np.concatenate((values, np.array([set_repeats]).T), axis=-1)
 
-open(pl.Path(__file__).parent / f"Instancias y Tablas PAR 2019-20/solutions.txt", 'w+').close()
+
+# Funcionan: 1, 112, 241, 27, 472
+info_names = ["Algoritmo", "Dataset", "% Restricciones", "Semilla", "N° clústeres", "Desviación general", "Infeasibility", "Función objetivo", "Tiempo de ejecución (s)"]
+
+with open(pl.Path(__file__).parent / f"Instancias y Tablas PAR 2019-20/solutions.txt", 'w+') as sol_file:
+    sol_file.write(
+        f"{info_names[0]:>14} {info_names[1]:>7} {info_names[2]:>15} {info_names[3]:>7} {info_names[4]:>14} {info_names[5]:>20} {info_names[6]:>13} {info_names[7]:>20} {info_names[8]:>23}\n")
 for percent,dataset,seed,ncluster in values:
     data, const, scale_factor = init_data(dataset, percent)
     randgen = np.random.default_rng(int(seed))
-    tic_ls = time.perf_counter()
-    general_desviation, infeasibility, objective = local_search(data, const, int(ncluster), int(scale_factor), randgen)
-    toc_ls = time.perf_counter()
-    with open(pl.Path(__file__).parent / f"Instancias y Tablas PAR 2019-20/solutions.txt",'a+') as sol_file:
-        sol_file.write(
-f"""Algoritmo Búsqueda Local para {dataset} con {percent}% de restricciones, semilla {seed} y {ncluster} clústeres
-Desviación general: {general_desviation}
-Restricciones incumplidas: {infeasibility}
-Función Objetivo: {objective}
-Tiempo de ejecución: {toc_ls - tic_ls: 0.4f}s
-""")
-    tic_kmeans = time.perf_counter()
+    tic = time.perf_counter()
     general_desviation, infeasibility, objective = weak_const_kmeans(data, const, int(ncluster), int(scale_factor), randgen)
-    toc_kmeans = time.perf_counter()
+    toc = time.perf_counter()
+    func_name = "Greedy kmedias"
     with open(pl.Path(__file__).parent / f"Instancias y Tablas PAR 2019-20/solutions.txt",'a+') as sol_file:
         sol_file.write(
-f"""Algoritmo Greedy k-medias para {dataset} con {percent}% de restricciones, semilla {seed} y {ncluster} clústeres
-Desviación general: {general_desviation}
-Restricciones incumplidas: {infeasibility}
-Función Objetivo: {objective}
-Tiempo de ejecución: {toc_kmeans - tic_kmeans: 0.4f}s
-""")
+            f"{func_name:>14} {dataset:>7} {percent:>15} {seed:>7} {ncluster:>14} {general_desviation:>20} {infeasibility:>13} {objective:>20} {toc - tic:>23.4f}\n"
+        )
+
+    tic = time.perf_counter()
+    general_desviation, infeasibility, objective = local_search(data, const, int(ncluster), int(scale_factor), randgen)
+    toc = time.perf_counter()
+    func_name = "Búsqueda local"
+    with open(pl.Path(__file__).parent / f"Instancias y Tablas PAR 2019-20/solutions.txt",'a+') as sol_file:
+        sol_file.write(
+            f"{func_name:>14} {dataset:>7} {percent:>15} {seed:>7} {ncluster:>14} {general_desviation:>20} {infeasibility:>13} {objective:>20} {toc - tic:>23.4f}\n"
+        )
+
+"""
+            f"Algoritmo Búsqueda Local para {dataset} con {percent}% de restricciones, semilla {seed} y {ncluster} clústeres"
+            f"Desviación general: {general_desviation}"
+            f"Restricciones incumplidas: {infeasibility}"
+            f"Función Objetivo: {objective}"
+            f"Tiempo de ejecución: {toc_ls - tic_ls: 0.4f}s"
+"""
