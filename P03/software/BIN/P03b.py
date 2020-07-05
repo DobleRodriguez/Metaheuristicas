@@ -1,4 +1,4 @@
-# Práctica 02.b
+# Práctica 03.b
 # Técnicas de Búsqueda basadas en Poblaciones para el Problema del Agrupamiento con Restricciones
 # Metaheurísticas (MH) - Grupo A1
 # Universidad de Granada - Grado en Ingeniería Informática - Curso 2019/2020

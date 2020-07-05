@@ -1,0 +1,3 @@
+     Algoritmo    Dataset % Restricciones Semilla   N° clústeres   Desviación general Infeasibility     Función objetivo Tiempo de ejecución (s)
+           RCA       iris              10       1              3   0.6693049493711261           0.0   0.6693049493711261                 20.1169
+           RCA       iris              10     112              3   0.6693049493711261           0.0   0.6693049493711261                 16.9934
